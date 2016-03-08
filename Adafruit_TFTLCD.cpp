@@ -29,6 +29,7 @@
 #define ID_7575    1
 #define ID_9341    2
 #define ID_HX8357D    3
+#define ID_9335 4
 #define ID_UNKNOWN 0xFF
 
 #include "registers.h"
@@ -248,10 +249,65 @@ static const uint16_t ILI932x_regValues[] PROGMEM = {
   ILI932X_DISP_CTRL1       , 0x0133, // Main screen turn on
 };
 
+
+static const uint16_t ILI9335_regValues[] PROGMEM = {
+  //*********************************************Start intial Sequence  
+  TFTLCD_DELAY             , 50,     // 50 millisecond delay
+  ILI9335_DRIV_OUT_CTRL    , 0x0100,
+  ILI9335_DRIV_WAV_CTRL    , 0x0200,
+  ILI9335_ENTRY_MOD        , 0x1030,
+  ILI9335_DISP_CTRL2       , 0x0202,
+  ILI9335_DISP_CTRL3       , 0x0000,
+  ILI9335_DISP_CTRL4       , 0x0000,
+  ILI9335_RGB_DISP_IF_CTRL1, 0x0000,
+  ILI9335_FRM_MARKER_POS   , 0x0000,
+  ILI9335_GATE_SCAN_CTRL1  , 0x2700,
+  ILI9335_GATE_SCAN_CTRL2  , 0x0000,
+  ILI9335_GATE_SCAN_CTRL2  , 0x0000,
+  TFTLCD_DELAY             , 10,
+
+  //*********************************************Power On
+  ILI9335_POW_CTRL1        , 0x1490,
+  ILI9335_POW_CTRL2        , 0x0227,
+  TFTLCD_DELAY             , 80,
+  ILI9335_POW_CTRL3        , 0x000c,
+  TFTLCD_DELAY             , 10,
+  ILI9335_POW_CTRL4        , 0x1000,
+  ILI9335_POW_CTRL7        , 0x000b,
+  ILI9335_FRM_RATE_COL_CTRL, 0x000b,
+  TFTLCD_DELAY             , 10,
+
+  ILI9335_GRAM_HOR_AD      , 0x0000,
+  ILI9335_GRAM_VER_AD      , 0x0000,
+
+  //*********************************************Set GAMMA
+  ILI9335_GAMMA_CTRL1      , 0x0000,
+  ILI9335_GAMMA_CTRL2      , 0x0406,
+  ILI9335_GAMMA_CTRL3      , 0x0002,
+  ILI9335_GAMMA_CTRL4      , 0x0402,
+  ILI9335_GAMMA_CTRL5      , 0x0004,
+  ILI9335_GAMMA_CTRL6      , 0x0507,
+  ILI9335_GAMMA_CTRL7      , 0x0103,
+  ILI9335_GAMMA_CTRL8      , 0x0707,
+  ILI9335_GAMMA_CTRL9      , 0x0204,
+  ILI9335_GAMMA_CTRL10     , 0x0004,
+
+//**********************************************Set GRAM aera
+  ILI9335_HOR_START_AD     , 0x0000,
+  ILI9335_HOR_END_AD       , 0x00EF,
+  ILI9335_VER_START_AD     , 0X0000,
+  ILI9335_VER_END_AD       , 0x013F,
+  TFTLCD_DELAY             , 10,
+
+//**********************************************Main screen turn on
+  ILI9335_DISP_CTRL1       , 0x0133,
+};
+
 void Adafruit_TFTLCD::begin(uint16_t id) {
   uint8_t i = 0;
 
   reset();
+  Serial.println(" Reseted...");
 
   delay(200);
 
@@ -269,7 +325,20 @@ void Adafruit_TFTLCD::begin(uint16_t id) {
     setRotation(rotation);
     setAddrWindow(0, 0, TFTWIDTH-1, TFTHEIGHT-1);
 
-  } else if (id == 0x9341) {
+  }else if (id = 0x9335) {
+    Serial.println(" ILI9335");
+    uint16_t a, d;
+    driver = ID_932X;
+    CS_ACTIVE;
+    while(i < sizeof(ILI9335_regValues) / sizeof(uint16_t)) {
+      a = pgm_read_word(&ILI9335_regValues[i++]);
+      d = pgm_read_word(&ILI9335_regValues[i++]);
+      if(a == TFTLCD_DELAY) delay(d);
+      else                  writeRegister16(a, d);
+    }
+    setRotation(rotation);
+    setAddrWindow(0, 0, TFTWIDTH-1, TFTHEIGHT-1);
+  }else if (id == 0x9341) {
 
     uint16_t a, d;
     driver = ID_9341;
