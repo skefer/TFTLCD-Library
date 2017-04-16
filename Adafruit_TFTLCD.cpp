@@ -437,6 +437,7 @@ void Adafruit_TFTLCD::reset(void) {
   write8(0x00);
   for(uint8_t i=0; i<3; i++) WR_STROBE; // Three extra 0x00s
   CS_IDLE;
+  delay(2);
 }
 
 // Sets the LCD address window (and address counter, on 932X).
